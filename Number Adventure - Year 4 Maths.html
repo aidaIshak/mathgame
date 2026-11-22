@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Number Adventure - Year 4</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0E4D4A;--card:#FFF6E5;--ink:#1B3B38;--sun:#FFC93C;--coral:#FF7A5C;--ok:#3DBE7A;--bad:#E5484D}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);font-family:'Baloo 2',Tahoma,sans-serif;color:var(--ink);display:flex;align-items:center;justify-content:center;padding:16px}
+.wrap{width:100%;max-width:520px}
+.card{background:var(--card);border-radius:28px;padding:24px;box-shadow:0 10px 0 rgba(0,0,0,.2)}
+h1{color:#fff;text-align:center;margin:8px 0 16px;font-size:1.8rem;font-weight:800}
+.bar{height:14px;background:rgba(255,255,255,.25);border-radius:99px;overflow:hidden;margin-bottom:18px}
+.bar div{height:100%;background:var(--sun);width:0;transition:width .4s}
+.q{font-size:1.3rem;font-weight:800;line-height:1.5;margin:0 0 18px;min-height:90px}
+.opts{display:grid;gap:10px}
+button{font-family:inherit;font-size:1.15rem;font-weight:800;border:0;border-radius:18px;padding:14px;cursor:pointer;background:#fff;color:var(--ink);box-shadow:0 5px 0 #c9b98f}
+button:active{transform:translateY(3px);box-shadow:0 2px 0 #c9b98f}
+button.ok{background:var(--ok);color:#fff;box-shadow:0 5px 0 #26834f}
+button.bad{background:var(--bad);color:#fff;box-shadow:0 5px 0 #9e2a2d}
+.main{background:var(--coral);color:#fff;box-shadow:0 5px 0 #b5442c;width:100%;margin-top:12px}
+input{width:100%;font-family:inherit;font-size:1.4rem;text-align:center;padding:12px;border-radius:18px;border:3px solid var(--sun);margin-bottom:10px}
+.fb{min-height:48px;margin-top:14px;font-size:1.1rem;font-weight:800;text-align:center}
+.stars{font-size:2.6rem;text-align:center;letter-spacing:6px;margin:10px 0}
+.hide{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🗺️ Number Adventure</h1>
+  <div class="card">
+    <div id="start">
+      <p class="q" style="text-align:center">Year 4 Maths Revision - Term 1.<br>Answer the questions and earn stars! ⭐</p>
+      <button class="main" onclick="go()">Let's go!</button>
+    </div>
+    <div id="game" class="hide">
+      <div class="bar"><div id="prog"></div></div>
+      <p class="q" id="qt"></p>
+      <div class="opts" id="opts"></div>
+      <div id="inWrap" class="hide">
+        <input id="inp" type="text" inputmode="numeric" placeholder="Type your answer" onkeydown="if(event.key==='Enter')checkNum()">
+        <button class="main" onclick="checkNum()">Check</button>
+      </div>
+      <div class="fb" id="fb"></div>
+      <button class="main hide" id="next" onclick="nextQ()">Next question ➜</button>
+    </div>
+    <div id="end" class="hide" style="text-align:center">
+      <div class="stars" id="stars"></div>
+      <p class="q" id="final"></p>
+      <button class="main" onclick="go()">Play again</button>
+    </div>
+  </div>
+</div>
+<script>
+const Q=[
+{t:'In which month did the adventure park have the most visitors?\n(May 8,345 · June 4,719 · July 3,892 · August 8,720 · September 8,340)',o:['May','July','August','September'],a:2},
+{t:'How many of these numbers are multiples of 4?\n14, 24, 32, 18, 40, 26',n:'3'},
+{t:'Round 6,485 to the nearest hundred:',o:['6,400','6,500','6,490','7,000'],a:1},
+{t:'What is the value of the digit 3 in 7,394?',o:['3','30','300','3,000'],a:2},
+{t:'Complete: 32 ÷ ___ = 8',n:'4'},
+{t:'A concert hall has 4,500 seats. 1,620 adults and 1,450 children buy tickets. How many seats are empty?',n:'1430'},
+{t:'A museum had 6,000 visitors over a weekend. 3,485 came on Saturday. How many came on Sunday?',n:'2515'},
+{t:'At 6:00 am it was −4°C. By 2:00 pm it was 5°C. By how many degrees did the temperature rise?',n:'9'},
+{t:'In the sequence 6, ?, 18, 24, ?, 36, what is the first missing number?',n:'12'},
+{t:'How many centimetres are in 1 metre?',o:['10','100','1,000'],a:1},
+{t:'A 6 km trail: the first section is 2,100 m and the second is 1 km 500 m. How many metres is the last section?',n:'2400'},
+{t:'Mia has a 2 m ribbon and cuts 4 pieces, each 35 cm long. How many centimetres are left?',n:'60'},
+{t:'On the pictogram, each star = 4 pupils. Football has 5 stars. How many pupils chose football?',n:'20'}
+];
+let i=0,s=0,locked=false;
+function go(){i=0;s=0;show('game');render()}
+function show(id){['start','game','end'].forEach(x=>document.getElementById(x).classList.toggle('hide',x!==id))}
+function render(){
+  locked=false;const q=Q[i];
+  document.getElementById('prog').style.width=(i/Q.length*100)+'%';
+  document.getElementById('qt').innerText=q.t;
+  document.getElementById('fb').textContent='';
+  document.getElementById('next').classList.add('hide');
+  const box=document.getElementById('opts');box.innerHTML='';
+  const inW=document.getElementById('inWrap');
+  if(q.o){inW.classList.add('hide');q.o.forEach((o,k)=>{const b=document.createElement('button');b.textContent=o;b.onclick=()=>pick(k,b);box.appendChild(b)})}
+  else{inW.classList.remove('hide');const inp=document.getElementById('inp');inp.value='';setTimeout(()=>inp.focus(),50)}
+}
+function pick(k,b){
+  if(locked)return;locked=true;const q=Q[i];
+  document.querySelectorAll('#opts button')[q.a].classList.add('ok');
+  if(k===q.a){s++;fb('Well done! 🎉',true)}else{b.classList.add('bad');fb('Nice try! The correct answer is '+q.o[q.a],false)}
+  done();
+}
+function checkNum(){
+  if(locked)return;const q=Q[i];
+  const v=document.getElementById('inp').value.replace(/[,\s]/g,'');
+  if(!v)return;locked=true;
+  const ok=v===q.n;if(ok)s++;
+  fb(ok?'Great! 🌟':'The correct answer is '+q.n,ok);
+  done();
+}
+function fb(m,ok){const f=document.getElementById('fb');f.textContent=m;f.style.color=ok?'var(--ok)':'var(--bad)'}
+function done(){const b=document.getElementById('next');b.textContent=i<Q.length-1?'Next question ➜':'See your score 🏆';b.classList.remove('hide')}
+function nextQ(){
+  i++;
+  if(i>=Q.length){
+    show('end');
+    const st=Math.round(s/Q.length*5);
+    document.getElementById('stars').textContent='★'.repeat(st)+'☆'.repeat(5-st);
+    document.getElementById('final').textContent='You got '+s+' out of '+Q.length+' right! '+(st>=4?'You are a maths superstar 👑':'Keep practising and you will get even better!');
+  }else render();
+}
+</script>
+</body>
+</html>
